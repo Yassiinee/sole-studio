@@ -1,13 +1,9 @@
-<div align="center">
-
 # SoleStudio Pro 👟
 ### Zero-Config Professional Shoe Photography Powered by FLUX.1 & Puter.js
 
 **SoleStudio Pro** is an advanced AI-driven application designed to transform amateur shoe photos into professional, studio-quality product shots directly from your browser. 
 
 By leveraging **FLUX.1-schnell** via **Puter.js**, SoleStudio Pro eliminates the need for `.env` files, API keys, and complex setups. Users get instant 4K studio environments with high-fidelity textures, realistic lighting, and flawless shadows—**completely for free**.
-
-</div>
 
 ---
 
