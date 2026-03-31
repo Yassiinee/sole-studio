@@ -1,35 +1,45 @@
-# SoleStudio Pro 👟
-### Zero-Config Professional Shoe Photography Powered by FLUX.1 & Puter.js
+[![License](https://img.shields.io/github/license/Yassiinee/sole-studio)](https://github.com/Yassiinee/sole-studio/blob/main/LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/Yassiinee/sole-studio)](https://github.com/Yassiinee/sole-studio/issues)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 
-**SoleStudio Pro** is an advanced AI-driven application designed to transform amateur shoe photos into professional, studio-quality product shots directly from your browser. 
+<div align="center">
+  <img src="./public/logo.png" alt="SoleStudio Pro Logo" width="150" height="auto" />
+  <h1>SoleStudio Pro 👟</h1>
+  <p><strong>Professional 4K Studio Renderings from Amateur Shoe Photos</strong></p>
+</div>
 
-By leveraging **FLUX.1-schnell** via **Puter.js**, SoleStudio Pro eliminates the need for `.env` files, API keys, and complex setups. Users get instant 4K studio environments with high-fidelity textures, realistic lighting, and flawless shadows—**completely for free**.
+**SoleStudio Pro** is an advanced AI-driven application designed to transform amateur shoe photos into professional, studio-quality product shots directly from your browser.
+
+By unifying **Groq Vision** and **fal-ai's FLUX.1-schnell**, SoleStudio Pro processes your footwear images into 4K e-commerce assets with precise textures, realistic lighting, and pristine studio backdrops in seconds.
 
 ---
 
 ## ✨ Features
 
-- **Zero Configuration**: No API keys or `.env` files are required. The entire AI pipeline is managed automatically, directly from the browser window.
-- **FLUX.1-schnell Engine**: Rapid image generation using the lightning-fast FLUX.1 model, ensuring premium commercial photography composition in seconds.
-- **Reference Upload**: Optional image upload capability. Your uploaded sneakers serve as the reference base for the new 4K studio AI generation.
-- **Pro Lighting Engine**: Prompts are meticulously optimized to apply soft shadows, directional light, and a pristine `#E8E8E8` backdrop.
-- **4K High-Res Downloads**: Export your generated image with full resolution for professional e-commerce use.
-- **Refined UI/UX**: A sleek, minimal interface designed with **Tailwind CSS v4** and **Framer Motion** for a luxurious user experience.
+- **Automated AI Pipeline**: No manual prompt tuning. Groq Vision studies your uploaded shoe and algorithmically crafts the perfect prompt for you.
+- **Groq Vision Engine**: Utilizing the cutting edge `llama-4-scout-17b-16e` model to accurately detect brand, colorways, and precise shoe geometries.
+- **FLUX.1-schnell Synthesis**: Offloading rendering to HuggingFace routers targeting the `fal-ai/flux/schnell` model for hyper-realistic 4K results in ~10 seconds.
+- **Vite Proxy Magic**: Zero CORS issues—the UI automatically proxies API calls through the Vite development server to safely connect with external services.
+- **High-Res Downloads**: Instantly save your 1024x1024 studio shots locally with one click.
+- **Refined UI/UX**: A sleek, minimal browser canvas built with React, Vite, and smooth Framer Motion aesthetics.
 
 ---
 
 ## 🏗️ Architecture & Technology Stack
 
-SoleStudio operates on a lightweight frontend architecture, abstracting all heavy lifting to the free-to-use Puter CDN.
+SoleStudio acts as the master conductor between ultra-fast inference engines and local user workflows:
 
-### Core Architecture
-- **Puter.js Integration**: The app avoids server-side secret management by using `window.puter.ai.txt2img`. Users securely connect their free Puter account in-browser.
-- **State Management**: Full React state management governing idle, preparing, generation, and output rendering cycles.
-- **Fluid Animation System**: Leveraging `motion/react` for buttery smooth transitions, dynamic tickers during loading states, and layout persistence.
+### The Two-Step Pipeline
+
+1. **Step 1 (Analysis)**: Your source image is parsed into Base64 and sent to Groq. A fine-tuned Vision prompt extracts visual features and returns a meticulously constructed FLUX prompt.
+2. **Step 2 (Generation)**: The generated prompt hits the `fal-ai FLUX.1` engine over HuggingFace, executing a 4-step diffusion pass against a seamless `#E8E8E8` studio backdrop.
 
 ### Tech Stack
-- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **AI Backend**: [Puter.js](https://puter.com/) (FLUX.1 txt2img endpoints)
+
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Vision Model**: Groq `llama-4-scout-17b-16e-instruct`
+- **Image Model**: FLUX.1-schnell (fal-ai via HuggingFace)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion](https://motion.dev/)
 - **Icons**: [Lucide React](https://lucide.dev/)
@@ -37,57 +47,62 @@ SoleStudio operates on a lightweight frontend architecture, abstracting all heav
 
 ---
 
-## 🛠️ Usage Flow
+## 🚀 Getting Started
 
-1. **Upload Reference (Optional)**: Drag and drop an existing shoe photo you want to base your image on.
-2. **Customize Prompt**: The default prompt achieves a premium 3/4 angle studio look. Click **"Edit Prompt"** to refine aesthetics, add props, or change the lighting.
-3. **Generate**: Click the generate button. If it's your first time, the Puter.js OAuth modal will pop up. Sign in quickly (it's free).
-4. **Processing**: The UI will cycle securely through generation phases.
-5. **Download**: Once the model renders the 4K asset, hit download to save directly to your drive.
+To run SoleStudio Pro, you will need two free access tokens. Follow the instructions carefully to set up your environment.
 
----
+### 1. Prerequisites
 
-## 🚀 Getting Started Locally
-
-Getting the development environment up and running is phenomenally straight-forward since there are no API keys required.
-
-### Prerequisites
 - [Node.js](https://nodejs.org/) (LTS version recommended)
-- `npm` or `yarn`
+- API Keys:
+  - **Groq API Key**: Obtain a free key from the [Groq Console](https://console.groq.com/).
+  - **HuggingFace Token**: Get a free READ token from [HuggingFace Settings](https://huggingface.co/settings/tokens).
 
-### Installation
+### 2. Installation
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/Yassiinee/sole-studio.git
    cd sole-studio
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
-3. **Launch the Application**:
+3. **Environment Setup**:
+   Create a `.env` file at the root of the project by copying the example:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Add your keys to the `.env` file:
+
+   ```env
+   GROQ_API_KEY=gsk_youractualkeyhere...
+   HF_TOKEN=hf_youractualtokenhere...
+   ```
+
+4. **Launch the Application**:
+
    ```bash
    npm run dev
    ```
 
-4. **Navigate to Local Server**:
-   Open `http://localhost:3000` in your web browser. Ensure you allow the Puter.js script to run if you have aggressive ad blockers enabled.
-
----
-
-## 💬 FAQ
-
-**Are there limits to image generation?**
-Generation runs via the Puter.js platform. Currently, Puter offers extremely generous free daily usage. A single user can typically generate dozens to hundreds of high-quality results per day with FLUX.1-schnell.
-
-**Why did you remove Gemini?**
-We migrated to Puter.js to completely remove developer friction. Requiring a `GEMINI_API_KEY` meant folks couldn't clone and run instantly. By switching to Puter, the end user authenticates, meaning devs don't need APIs setup!
+5. **Start Creating**:
+   Open the port provided by vite (usually `http://localhost:5173`). Upload a shoe photo and generate!
 
 ---
 
 ## 📄 License
 
-This project is open-source and licensed under the **Apache-2.0 License**. Feel free to fork, adapt, and build incredible AI-powered tools on top of this starter!
+This project is open-source and licensed under the **Apache-2.0 License**.
+
+## Author
+
+**Yassine Zakhama** — [zakhamayassine@gmail.com
+](mailto:zakhamayassine@gmail.com)
