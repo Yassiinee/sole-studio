@@ -64,22 +64,15 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  // ── Pipeline run ──────────────────────────────────────────────────────────
-  const run = async () => {
+  // ── Step 1: Groq Vision → FLUX prompt ────────────────────────────────────
+  const runStep1 = async () => {
     const groqKey = (process.env as any).GROQ_API_KEY;
-    const hfToken = (process.env as any).HF_TOKEN;
 
     if (!groqKey)
       return setState((p) => ({
         ...p,
         stage: "error",
         error: "GROQ_API_KEY missing from .env",
-      }));
-    if (!hfToken)
-      return setState((p) => ({
-        ...p,
-        stage: "error",
-        error: "HF_TOKEN missing from .env",
       }));
     if (!state.original)
       return setState((p) => ({
@@ -88,7 +81,6 @@ export default function App() {
         error: "Please upload a shoe photo first.",
       }));
 
-    // Step 1 — Groq Vision
     setState((p) => ({
       ...p,
       stage: "analyzing",
@@ -115,10 +107,35 @@ export default function App() {
       }));
       return;
     }
-    stopTicker();
 
-    // Step 2 — FLUX generation
-    setState((p) => ({ ...p, stage: "generating", fluxPrompt: prompt }));
+    stopTicker();
+    // Step 1 complete — surface the prompt, wait for user to trigger Step 2
+    setState((p) => ({
+      ...p,
+      stage: "analyzed",
+      fluxPrompt: prompt,
+      statusMsg: "",
+    }));
+  };
+
+  // ── Step 2: FLUX generation ───────────────────────────────────────────────
+  const runStep2 = async () => {
+    const hfToken = (process.env as any).HF_TOKEN;
+
+    if (!hfToken)
+      return setState((p) => ({
+        ...p,
+        stage: "error",
+        error: "HF_TOKEN missing from .env",
+      }));
+    if (!state.fluxPrompt)
+      return setState((p) => ({
+        ...p,
+        stage: "error",
+        error: "No FLUX prompt found — run Step 1 first.",
+      }));
+
+    setState((p) => ({ ...p, stage: "generating", error: null }));
     startTicker([
       "Sending to FLUX.1-schnell...",
       "Diffusing light grey studio backdrop...",
@@ -130,7 +147,7 @@ export default function App() {
 
     let imageUrl: string;
     try {
-      imageUrl = await generateStudioImage(prompt, hfToken);
+      imageUrl = await generateStudioImage(state.fluxPrompt, hfToken);
     } catch (err: any) {
       stopTicker();
       setState((p) => ({
@@ -205,10 +222,16 @@ export default function App() {
                 stage={stage}
                 isProcessing={isProcessing}
                 hasFile={!!original}
-                onRun={run}
+                onStep1={runStep1}
+                onStep2={runStep2}
                 onDownload={download}
               />
-              {error && <ErrorBanner message={error} onRetry={run} />}
+              {error && (
+                <ErrorBanner
+                  message={error}
+                  onRetry={stage === "analyzed" ? runStep2 : runStep1}
+                />
+              )}
             </div>
 
             {original && <SourceThumbnail src={original} />}
@@ -223,6 +246,8 @@ export default function App() {
               statusMsg={statusMsg}
               original={original}
               generated={generated}
+              fluxPrompt={fluxPrompt}
+              onGenerate={runStep2}
               onDownload={download}
             />
           </div>

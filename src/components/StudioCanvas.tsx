@@ -5,6 +5,8 @@ import {
   Sparkles,
   Zap,
   Image as ImageIcon,
+  CheckCircle2,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Stage } from "../types";
@@ -15,6 +17,8 @@ interface StudioCanvasProps {
   statusMsg: string;
   original: string | null;
   generated: string | null;
+  fluxPrompt: string | null;
+  onGenerate: () => void;
   onDownload: () => void;
 }
 
@@ -29,6 +33,12 @@ function StageBadge({ stage }: { stage: Stage }) {
     return (
       <span className="ml-2 text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
         Step 1 · Groq Vision
+      </span>
+    );
+  if (stage === "analyzed")
+    return (
+      <span className="ml-2 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
+        ✓ Step 1 Done · Ready to Generate
       </span>
     );
   if (stage === "generating")
@@ -46,6 +56,8 @@ export default function StudioCanvas({
   statusMsg,
   original,
   generated,
+  fluxPrompt,
+  onGenerate,
   onDownload,
 }: StudioCanvasProps) {
   return (
@@ -73,7 +85,7 @@ export default function StudioCanvas({
       <div className="flex-1 relative rounded-2xl overflow-hidden bg-[#FAFAFA] flex items-center justify-center p-6">
         <AnimatePresence mode="wait">
           {/* Idle / Ready placeholder */}
-          {(stage === "idle" || stage === "ready") && !generated && (
+          {(stage === "idle" || stage === "ready") && (
             <motion.div
               key="idle"
               initial={{ opacity: 0 }}
@@ -89,16 +101,16 @@ export default function StudioCanvas({
               </p>
               <p className="text-xs text-black/13 mt-1">
                 {stage === "ready"
-                  ? "Upload done — hit Analyse & Generate"
+                  ? "Upload done — hit Analyse Shoe"
                   : "Upload a shoe photo to get started"}
               </p>
             </motion.div>
           )}
 
-          {/* Processing spinner */}
-          {isProcessing && (
+          {/* Step 1 running */}
+          {stage === "analyzing" && (
             <motion.div
-              key="loading"
+              key="analyzing"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -107,27 +119,16 @@ export default function StudioCanvas({
               <div className="relative w-24 h-24 mb-7">
                 <div className="absolute inset-0 rounded-full border-4 border-black/5" />
                 <div className="absolute inset-0 rounded-full border-4 border-black border-t-transparent animate-spin" />
-                {stage === "analyzing" ? (
-                  <Sparkles
-                    size={22}
-                    className="absolute inset-0 m-auto text-amber-500 animate-pulse"
-                  />
-                ) : (
-                  <Zap
-                    size={22}
-                    className="absolute inset-0 m-auto text-yellow-500 animate-pulse"
-                  />
-                )}
+                <Sparkles
+                  size={22}
+                  className="absolute inset-0 m-auto text-amber-500 animate-pulse"
+                />
               </div>
               <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/30 mb-1">
-                {stage === "analyzing"
-                  ? "Step 1 of 2 — Groq Vision"
-                  : "Step 2 of 2 — FLUX.1-schnell"}
+                Step 1 of 2 — Groq Vision
               </span>
               <h3 className="text-base font-bold mb-2">
-                {stage === "analyzing"
-                  ? "Analysing your shoe..."
-                  : "Generating studio image..."}
+                Analysing your shoe...
               </h3>
               <p className="text-sm text-black/35 italic h-10 leading-relaxed">
                 {statusMsg}
@@ -136,11 +137,95 @@ export default function StudioCanvas({
                 <motion.div
                   className="h-full bg-black rounded-full"
                   initial={{ width: "0%" }}
-                  animate={{ width: stage === "analyzing" ? "42%" : "92%" }}
-                  transition={{
-                    duration: stage === "analyzing" ? 5 : 14,
-                    ease: "easeOut",
-                  }}
+                  animate={{ width: "42%" }}
+                  transition={{ duration: 5, ease: "easeOut" }}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 1 done — prompt ready, awaiting Step 2 */}
+          {stage === "analyzed" && fluxPrompt && (
+            <motion.div
+              key="analyzed"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="w-full max-w-lg flex flex-col items-center text-center gap-6"
+            >
+              {/* Success badge */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <CheckCircle2 size={28} className="text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-emerald-700">
+                    Step 1 Complete — Groq Vision
+                  </p>
+                  <p className="text-xs text-black/30 mt-0.5">
+                    Shoe analysed · FLUX prompt generated
+                  </p>
+                </div>
+              </div>
+
+              {/* Prompt card */}
+              <div className="w-full bg-black/[0.03] border border-black/8 rounded-2xl p-5 text-left">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black/30 mb-2">
+                  Generated FLUX Prompt
+                </p>
+                <p className="text-xs font-mono leading-relaxed text-black/60 line-clamp-6">
+                  {fluxPrompt}
+                </p>
+              </div>
+
+              {/* Step 2 CTA */}
+              <button
+                onClick={onGenerate}
+                className="w-full bg-black text-white py-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 hover:scale-[1.015] active:scale-[0.985] transition-all"
+              >
+                <Zap size={16} className="text-yellow-400" />
+                Generate 4K Studio Image
+                <ChevronRight size={14} />
+              </button>
+
+              <p className="text-[10px] text-black/25">
+                Powered by FLUX.1-schnell via HuggingFace · ~10 s
+              </p>
+            </motion.div>
+          )}
+
+          {/* Step 2 running */}
+          {stage === "generating" && (
+            <motion.div
+              key="generating"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center text-center max-w-sm"
+            >
+              <div className="relative w-24 h-24 mb-7">
+                <div className="absolute inset-0 rounded-full border-4 border-black/5" />
+                <div className="absolute inset-0 rounded-full border-4 border-black border-t-transparent animate-spin" />
+                <Zap
+                  size={22}
+                  className="absolute inset-0 m-auto text-yellow-500 animate-pulse"
+                />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/30 mb-1">
+                Step 2 of 2 — FLUX.1-schnell
+              </span>
+              <h3 className="text-base font-bold mb-2">
+                Generating studio image...
+              </h3>
+              <p className="text-sm text-black/35 italic h-10 leading-relaxed">
+                {statusMsg}
+              </p>
+              <div className="mt-6 w-64 h-1.5 bg-black/8 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-black rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "92%" }}
+                  transition={{ duration: 14, ease: "easeOut" }}
                 />
               </div>
             </motion.div>
