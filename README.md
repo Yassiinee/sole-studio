@@ -1,14 +1,5 @@
 <div align="center">
 
-<svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #111; margin-bottom: 20px;">
-  <path d="m2 14 6 6 6-6"></path>
-  <path d="M8 20V4"></path>
-  <path d="m22 10-6-6-6 6"></path>
-  <path d="M16 4v16"></path>
-</svg>
-
-<img width="1200" height="475" alt="SoleStudio Pro Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-
 # SoleStudio Pro 👟
 ### Zero-Config Professional Shoe Photography Powered by FLUX.1 & Puter.js
 
