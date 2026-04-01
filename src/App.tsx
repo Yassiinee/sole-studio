@@ -137,7 +137,7 @@ export default function App() {
 
     setState((p) => ({ ...p, stage: "generating", error: null }));
     startTicker([
-      "Sending to FLUX.1-schnell...",
+      "Calling HuggingFace FLUX.1-schnell...",
       "Diffusing light grey studio backdrop...",
       "Rendering shoe geometry & textures...",
       "Painting soft ground shadow...",

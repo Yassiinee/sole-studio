@@ -2,7 +2,8 @@
  * API Pipeline
  *
  * Step 1: Groq llama-4-scout-17b-16e (vision) → reads shoe → writes FLUX prompt
- * Step 2: HuggingFace router → fal-ai FLUX.1-schnell → 1024×1024 studio photo
+ * Step 2: HuggingFace Router → hf-inference provider → FLUX.1-schnell
+ *         (hf-inference = HF's own free compute, NOT the paid fal-ai provider)
  *
  * Both endpoints are proxied via Vite to avoid CORS (see vite.config.ts):
  *   /api/groq → https://api.groq.com
@@ -10,7 +11,10 @@
  */
 
 const GROQ_URL = "/api/groq/openai/v1/chat/completions";
-const HF_URL = "/api/hf/fal-ai/flux/schnell";
+
+// router.huggingface.co with hf-inference provider = HF's own GPUs (free tier)
+const HF_INFERENCE_URL =
+  "/api/hf/hf-inference/models/black-forest-labs/FLUX.1-schnell";
 
 /** Step 1: Send shoe image to Groq Vision and receive a tailored FLUX prompt. */
 export async function buildFluxPrompt(
@@ -71,51 +75,53 @@ Return ONLY the prompt text — no preamble, no quotes, no explanation.`,
   return text;
 }
 
-/** Step 2: Generate a 1024×1024 studio image via fal-ai FLUX.1-schnell through HuggingFace. */
+/** Step 2: Generate a studio image via HuggingFace direct Inference API (free tier). */
 export async function generateStudioImage(
   prompt: string,
   hfToken: string,
 ): Promise<string> {
-  const res = await fetch(HF_URL, {
+  const res = await fetch(HF_INFERENCE_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${hfToken}`,
       "Content-Type": "application/json",
+      "x-wait-for-model": "true", // wait instead of 503 if model is cold
     },
-    body: JSON.stringify({
-      prompt,
-      image_size: "square_hd",
-      num_inference_steps: 4,
-      num_images: 1,
-      enable_safety_checker: false,
-    }),
+    body: JSON.stringify({ inputs: prompt }),
   });
 
   if (!res.ok) {
     let msg = "";
     try {
       const j = await res.json();
-      msg = (j as any)?.detail || (j as any)?.error || JSON.stringify(j);
+      msg =
+        (j as any)?.error ||
+        (j as any)?.message ||
+        JSON.stringify(j).slice(0, 200);
     } catch {
       msg = await res.text().catch(() => "");
     }
     if (res.status === 401)
       throw new Error(
-        "Invalid HF_TOKEN — check huggingface.co/settings/tokens",
+        "Invalid HF_TOKEN — visit huggingface.co/settings/tokens",
       );
     if (res.status === 402)
       throw new Error(
-        "HuggingFace: pre-paid credits required for fal-ai provider.",
+        "This model requires HF Pro credits. Try a different model or upgrade at huggingface.co/pricing",
       );
     if (res.status === 503)
-      throw new Error("Model warming up — wait 30 s and try again.");
-    throw new Error(`HuggingFace ${res.status}: ${String(msg).slice(0, 200)}`);
+      throw new Error("Model is loading — wait 20 s and try again.");
+    throw new Error(
+      `HuggingFace ${res.status}: ${String(msg).slice(0, 200)}`,
+    );
   }
 
-  const data = await res.json();
-  const imgUrl = data?.images?.[0]?.url;
-  if (imgUrl) return imgUrl;
-  const b64 = data?.images?.[0]?.b64_json;
-  if (b64) return `data:image/png;base64,${b64}`;
-  throw new Error(`Unexpected response: ${JSON.stringify(data).slice(0, 200)}`);
+  // HF Inference API returns raw binary image — convert to data URL
+  const blob = await res.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read image blob."));
+    reader.readAsDataURL(blob);
+  });
 }

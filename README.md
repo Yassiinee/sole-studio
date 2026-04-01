@@ -11,7 +11,7 @@
 
 **SoleStudio Pro** is an advanced AI-driven application designed to transform amateur shoe photos into professional, studio-quality product shots directly from your browser.
 
-By unifying **Groq Vision** and **fal-ai's FLUX.1-schnell**, SoleStudio Pro processes your footwear images into 4K e-commerce assets with precise textures, realistic lighting, and pristine studio backdrops in seconds.
+By unifying **Groq Vision** and **HuggingFace's native inference**, SoleStudio Pro processes your footwear images into 4K e-commerce assets with precise textures, realistic lighting, and pristine studio backdrops in seconds.
 
 ---
 
@@ -19,7 +19,7 @@ By unifying **Groq Vision** and **fal-ai's FLUX.1-schnell**, SoleStudio Pro proc
 
 - **Automated AI Pipeline**: No manual prompt tuning. Groq Vision studies your uploaded shoe and algorithmically crafts the perfect prompt for you.
 - **Groq Vision Engine**: Utilizing the cutting edge `llama-4-scout-17b-16e` model to accurately detect brand, colorways, and precise shoe geometries.
-- **FLUX.1-schnell Synthesis**: Offloading rendering to HuggingFace routers targeting the `fal-ai/flux/schnell` model for hyper-realistic 4K results in ~10 seconds.
+- **FLUX.1-schnell Synthesis**: Offloading rendering to the HuggingFace Router using the free `hf-inference` provider for hyper-realistic 4K results in seconds.
 - **Vite Proxy Magic**: Zero CORS issues—the UI automatically proxies API calls through the Vite development server to safely connect with external services.
 - **High-Res Downloads**: Instantly save your 1024x1024 studio shots locally with one click.
 - **Refined UI/UX**: A sleek, minimal browser canvas built with React, Vite, and smooth Framer Motion aesthetics.
@@ -33,13 +33,13 @@ SoleStudio acts as the master conductor between ultra-fast inference engines and
 ### The Two-Step Pipeline
 
 1. **Step 1 (Analysis)**: Your source image is parsed into Base64 and sent to Groq. A fine-tuned Vision prompt extracts visual features and returns a meticulously constructed FLUX prompt.
-2. **Step 2 (Generation)**: The generated prompt hits the `fal-ai FLUX.1` engine over HuggingFace, executing a 4-step diffusion pass against a seamless `#E8E8E8` studio backdrop.
+2. **Step 2 (Generation)**: The generated prompt hits the `FLUX.1-schnell` engine over HuggingFace's new free router (`hf-inference`), executing a fast diffusion pass against a seamless `#E8E8E8` studio backdrop.
 
 ### Tech Stack
 
 - **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
 - **Vision Model**: Groq `llama-4-scout-17b-16e-instruct`
-- **Image Model**: FLUX.1-schnell (fal-ai via HuggingFace)
+- **Image Model**: FLUX.1-schnell (via HuggingFace Router / `hf-inference`)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion](https://motion.dev/)
 - **Icons**: [Lucide React](https://lucide.dev/)

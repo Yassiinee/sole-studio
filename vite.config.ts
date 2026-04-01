@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api\/groq/, ""),
         },
         // Proxies /api/hf/* → https://router.huggingface.co/*
+        // Uses hf-inference provider (HF's own free compute, not paid fal-ai)
         "/api/hf": {
           target: "https://router.huggingface.co",
           changeOrigin: true,
