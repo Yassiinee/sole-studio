@@ -16,7 +16,7 @@ export default function StudioApp() {
   const [error, setError] = useState<string | null>(null);
 
   // Custom Studio Color
-  const [bgColor, setBgColor] = useState<string>("#E8E8E8");
+  const [bgColor, setBgColor] = useState<string>("#5A5A5C");
 
   // ── File handling ─────────────────────────────────────────────────────────
   const handleFile = (file: File) => {
@@ -127,11 +127,11 @@ export default function StudioApp() {
                   </p>
                   <div className="flex items-center gap-3">
                     {[
-                      { name: "Studio Grey", hex: "#E8E8E8" },
+                      { name: "Pro Grey", hex: "#5A5A5C" },
+                      { name: "Light Sweep", hex: "#E8E8E8" },
                       { name: "Dark Charcoal", hex: "#222222" },
                       { name: "Pure White", hex: "#FFFFFF" },
                       { name: "Blush Pink", hex: "#F3E8EC" },
-                      { name: "Soft Mint", hex: "#E8F3EE" },
                     ].map((swatch) => (
                       <button
                         key={swatch.name}
@@ -150,11 +150,11 @@ export default function StudioApp() {
                       title="Custom Color"
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-transform hover:scale-110 overflow-hidden ${
                         ![
+                          "#5A5A5C",
                           "#E8E8E8",
                           "#222222",
                           "#FFFFFF",
                           "#F3E8EC",
-                          "#E8F3EE",
                         ].includes(bgColor)
                           ? "border-orange-500 scale-110 shadow-md"
                           : "border-black/10"
