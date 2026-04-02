@@ -74,7 +74,7 @@ export default function LandingPage() {
           >
             <Zap size={14} className="text-orange-400" />
             <span className="text-xs font-medium tracking-wide text-white/80 uppercase">
-              Powered by Groq Vision & FLUX.1
+              Powered by AI Background Segmentation & Canvas Compositing
             </span>
           </motion.div>
 
@@ -92,9 +92,7 @@ export default function LandingPage() {
             variants={itemVariants}
             className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed"
           >
-            Upload amateur shoe photos. Our AI acts as your prompt engineer and
-            virtual photographer, generating pristine 4K e-commerce assets in
-            seconds.
+            Upload amateur shoe photos. Our AI surgically extracts your shoe with pixel-perfect accuracy and composites it onto a flawless 4K studio sweep with realistic physics-based shadows.
           </motion.p>
 
           <motion.div
@@ -124,13 +122,13 @@ export default function LandingPage() {
           {[
             {
               icon: Wand2,
-              title: "Automated Prompts",
-              desc: "Groq Vision automatically analyzes your shoe's dimensions, textures, and colorways to engineer the perfect synthesis prompt.",
+              title: "Exact Details",
+              desc: "100% of your shoe's original pixels are preserved. We only intelligently strip the background and inject studio gradients and shadows.",
             },
             {
               icon: Zap,
               title: "Lightning Fast",
-              desc: "Powered by HuggingFace's free native inference router. Go from a mobile snapshot to a 4K studio render in ~20 seconds.",
+              desc: "Powered by WebAssembly-based background removal running entirely in your browser. Near instant studio renders for free.",
             },
             {
               icon: ShieldCheck,

@@ -17,12 +17,15 @@ By unifying **Groq Vision** and **HuggingFace's native inference**, SoleStudio P
 
 ## ✨ Features
 
-- **Automated AI Pipeline**: No manual prompt tuning. Groq Vision studies your uploaded shoe and algorithmically crafts the perfect prompt for you.
-- **Groq Vision Engine**: Utilizing the cutting edge `llama-4-scout-17b-16e` model to accurately detect brand, colorways, and precise shoe geometries.
-- **FLUX.1-schnell Synthesis**: Offloading rendering to the HuggingFace Router using the free `hf-inference` provider for hyper-realistic 4K results in seconds.
-- **Vite Proxy Magic**: Zero CORS issues—the UI automatically proxies API calls through the Vite development server to safely connect with external services.
-- **High-Res Downloads**: Instantly save your 1024x1024 studio shots locally with one click.
-- **Refined UI/UX**: A sleek, minimal browser canvas built with React, Vite, and smooth Framer Motion aesthetics.
+- **Exact Pixel Preservation:** Unlike text-to-image AI, SoleStudio Pro preserves 100% of your original shoe details, textures, and laces.
+- **AI Background Segmentation:** Uses powerful WebAssembly (WASM) models to seamlessly strip messy backgrounds in seconds.
+- **Studio Compositing:** Automatically calculates optimal padding and renders a flawless `#E8E8E8` grey gradient paper sweep background.
+- **Physics-based Shadows:** Generates soft, realistic drop shadows automatically anchored beneath your shoe cutout.
+- **Instant Export:** Download razor-sharp 4K digital assets locally.
+
+* **Vite Proxy Magic**: Zero CORS issues—the UI automatically proxies API calls through the Vite development server to safely connect with external services.
+* **High-Res Downloads**: Instantly save your 1024x1024 studio shots locally with one click.
+* **Refined UI/UX**: A sleek, minimal browser canvas built with React, Vite, and smooth Framer Motion aesthetics.
 
 ---
 
@@ -37,13 +40,13 @@ SoleStudio acts as the master conductor between ultra-fast inference engines and
 
 ### Tech Stack
 
-- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **Vision Model**: Groq `llama-4-scout-17b-16e-instruct`
-- **Image Model**: FLUX.1-schnell (via HuggingFace Router / `hf-inference`)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animations**: [Motion](https://motion.dev/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Language**: TypeScript
+-\* **Frontend:** React 19, TypeScript, Vite
+
+- **Styling:** Tailwind CSS v4, Framer Motion (dynamic routing animations)
+- **Auth:** Supabase Auth (Custom UI & Context Guards)
+- **Core Image Pipeline:**
+  - `@imgly/background-removal` (WASM Browser Inference)
+  - HTML `<canvas>` 2D Context Compositing
 
 ---
 
