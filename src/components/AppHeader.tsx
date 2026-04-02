@@ -1,11 +1,20 @@
 import React from "react";
-import { Camera } from "lucide-react";
+import { Camera, LogOut } from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { useNavigate } from "react-router-dom";
 
 interface AppHeaderProps {
   onReset: () => void;
 }
 
 export default function AppHeader({ onReset }: AppHeaderProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-black/6">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -22,12 +31,21 @@ export default function AppHeader({ onReset }: AppHeaderProps) {
             </p>
           </div>
         </div>
-        <button
-          onClick={onReset}
-          className="text-xs font-semibold text-black/35 hover:text-black border border-black/10 rounded-xl px-3 py-1.5 transition-colors"
-        >
-          Start Over
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onReset}
+            className="text-xs font-semibold text-black/35 hover:text-black border border-black/10 rounded-xl px-3 py-1.5 transition-colors"
+          >
+            Start Over
+          </button>
+          <button
+            onClick={handleLogout}
+            className="text-xs font-semibold text-red-500/60 hover:text-red-600 hover:bg-red-50 border border-red-500/10 rounded-xl px-3 py-1.5 transition-colors flex items-center gap-1"
+          >
+            <LogOut size={12} />
+            Log Out
+          </button>
+        </div>
       </div>
     </header>
   );
