@@ -11,7 +11,7 @@
 
 **SoleStudio Pro** is an advanced AI-driven application designed to transform amateur shoe photos into professional, studio-quality product shots directly from your browser.
 
-By unifying **Groq Vision** and **HuggingFace's native inference**, SoleStudio Pro processes your footwear images into 4K e-commerce assets with precise textures, realistic lighting, and pristine studio backdrops in seconds.
+By unifying **in-browser WebAssembly AI** and **smart HTML5 Canvas compositing**, SoleStudio Pro processes your footwear images into 4K e-commerce assets with precise textures, realistic shadows, and pristine studio backdrops in seconds—all locally and securely.
 
 ---
 
@@ -33,10 +33,22 @@ By unifying **Groq Vision** and **HuggingFace's native inference**, SoleStudio P
 
 SoleStudio acts as the master conductor between ultra-fast inference engines and local user workflows:
 
-### The Two-Step Pipeline
+### Architecture Flow
 
-1. **Step 1 (Analysis)**: Your source image is parsed into Base64 and sent to Groq. A fine-tuned Vision prompt extracts visual features and returns a meticulously constructed FLUX prompt.
-2. **Step 2 (Generation)**: The generated prompt hits the `FLUX.1-schnell` engine over HuggingFace's new free router (`hf-inference`), executing a fast diffusion pass against a seamless `#E8E8E8` studio backdrop.
+```mermaid
+graph TD
+    A[User Uploads Image] -->|Local Execution| B(Imgly Background Removal WASM)
+    B -->|Extracts Subject| C{Studio Canvas Compositor}
+    C -->|Calculates & Renders| D[Physics-based Drop Shadow]
+    C -->|Applies| E[Selected Background Palette]
+    C -->|Composites| F[Main Shoe Subject]
+    D --> G[Final 4K Studio Asset]
+    E --> G
+    F --> G
+
+    H[Supabase Auth Platform] -->|Guards| I((Application Context))
+    I -.-> A
+```
 
 ### Tech Stack
 
@@ -57,9 +69,7 @@ To run SoleStudio Pro, you will need two free access tokens. Follow the instruct
 ### 1. Prerequisites
 
 - [Node.js](https://nodejs.org/) (LTS version recommended)
-- API Keys:
-  - **Groq API Key**: Obtain a free key from the [Groq Console](https://console.groq.com/).
-  - **HuggingFace Token**: Get a free READ token from [HuggingFace Settings](https://huggingface.co/settings/tokens).
+- **Supabase Account**: You will need a standard Supabase project to handle user authentication. Obtain your Project URL and Anon Key from the Supabase dashboard.
 
 ### 2. Installation
 
@@ -86,8 +96,8 @@ To run SoleStudio Pro, you will need two free access tokens. Follow the instruct
    Add your keys to the `.env` file:
 
    ```env
-   GROQ_API_KEY=gsk_youractualkeyhere...
-   HF_TOKEN=hf_youractualtokenhere...
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJh...
    ```
 
 4. **Launch the Application**:
