@@ -1,181 +1,80 @@
 import React, { useState, useRef } from "react";
 import { AppState } from "../types";
-import { buildFluxPrompt, generateStudioImage } from "../api/pipeline";
+import { processStudioImage } from "../api/pipeline";
 import AppHeader from "../components/AppHeader";
 import AppFooter from "../components/AppFooter";
 import UploadZone from "../components/UploadZone";
-import PromptViewer from "../components/PromptViewer";
-import ActionButtons from "../components/ActionButtons";
 import ErrorBanner from "../components/ErrorBanner";
 import SourceThumbnail from "../components/SourceThumbnail";
-import PipelineInfo from "../components/PipelineInfo";
-import StudioCanvas from "../components/StudioCanvas";
-
-const INITIAL_STATE: AppState = {
-  original: null,
-  generated: null,
-  fluxPrompt: null,
-  stage: "idle",
-  statusMsg: "",
-  error: null,
-};
+import { CopyCheck, Download, Wand2 } from "lucide-react";
 
 export default function StudioApp() {
-  const [state, setState] = useState<AppState>(INITIAL_STATE);
-  const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [original, setOriginal] = useState<string | null>(null);
+  const [generated, setGenerated] = useState<string | null>(null);
+  const [stage, setStage] = useState<AppState["stage"]>("idle");
+  const [statusMsg, setStatusMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  // ── Ticker helpers ────────────────────────────────────────────────────────
-  const startTicker = (msgs: string[]) => {
-    let i = 0;
-    setState((p) => ({ ...p, statusMsg: msgs[0] }));
-    tickerRef.current = setInterval(() => {
-      i = (i + 1) % msgs.length;
-      setState((p) => ({ ...p, statusMsg: msgs[i] }));
-    }, 2200);
-  };
-
-  const stopTicker = () => {
-    if (tickerRef.current) {
-      clearInterval(tickerRef.current);
-      tickerRef.current = null;
-    }
-  };
+  // Custom Studio Color
+  const [bgColor, setBgColor] = useState<string>("#5A5A5C");
 
   // ── File handling ─────────────────────────────────────────────────────────
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      setState((p) => ({
-        ...p,
-        error: "Please upload a valid image file.",
-        stage: "error",
-      }));
+      setError("Please upload a valid image file.");
+      setStage("error");
       return;
     }
     const reader = new FileReader();
-    reader.onload = (e) =>
-      setState((p) => ({
-        ...p,
-        original: e.target?.result as string,
-        generated: null,
-        fluxPrompt: null,
-        stage: "ready",
-        error: null,
-      }));
+    reader.onload = (e) => {
+      setOriginal(e.target?.result as string);
+      setGenerated(null);
+      setStage("ready");
+      setError(null);
+    };
     reader.readAsDataURL(file);
   };
 
-  // ── Step 1: Groq Vision → FLUX prompt ────────────────────────────────────
-  const runStep1 = async () => {
-    const groqKey = (process.env as any).GROQ_API_KEY;
-
-    if (!groqKey)
-      return setState((p) => ({
-        ...p,
-        stage: "error",
-        error: "GROQ_API_KEY missing from .env",
-      }));
-    if (!state.original)
-      return setState((p) => ({
-        ...p,
-        stage: "error",
-        error: "Please upload a shoe photo first.",
-      }));
-
-    setState((p) => ({
-      ...p,
-      stage: "analyzing",
-      error: null,
-      generated: null,
-      fluxPrompt: null,
-    }));
-    startTicker([
-      "Sending shoe to Groq Vision...",
-      "Identifying brand, colorway & materials...",
-      "Engineering the perfect FLUX prompt...",
-      "Adding studio lighting descriptors...",
-    ]);
-
-    let prompt: string;
-    try {
-      prompt = await buildFluxPrompt(state.original, groqKey);
-    } catch (err: any) {
-      stopTicker();
-      setState((p) => ({
-        ...p,
-        stage: "error",
-        error: `Step 1 (Groq): ${err.message}`,
-      }));
+  // ── Single Step: Exact Compositing ────────────────────────────────────────
+  const runGeneration = async () => {
+    if (!original) {
+      setError("Please upload a shoe photo first.");
+      setStage("error");
       return;
     }
 
-    stopTicker();
-    // Step 1 complete — surface the prompt, wait for user to trigger Step 2
-    setState((p) => ({
-      ...p,
-      stage: "analyzed",
-      fluxPrompt: prompt,
-      statusMsg: "",
-    }));
-  };
+    setStage("generating");
+    setError(null);
+    setGenerated(null);
 
-  // ── Step 2: FLUX generation ───────────────────────────────────────────────
-  const runStep2 = async () => {
-    const hfToken = (process.env as any).HF_TOKEN;
-
-    if (!hfToken)
-      return setState((p) => ({
-        ...p,
-        stage: "error",
-        error: "HF_TOKEN missing from .env",
-      }));
-    if (!state.fluxPrompt)
-      return setState((p) => ({
-        ...p,
-        stage: "error",
-        error: "No FLUX prompt found — run Step 1 first.",
-      }));
-
-    setState((p) => ({ ...p, stage: "generating", error: null }));
-    startTicker([
-      "Calling HuggingFace FLUX.1-schnell...",
-      "Diffusing light grey studio backdrop...",
-      "Rendering shoe geometry & textures...",
-      "Painting soft ground shadow...",
-      "Applying studio lighting pass...",
-      "Finalising 4K commercial shot...",
-    ]);
-
-    let imageUrl: string;
     try {
-      imageUrl = await generateStudioImage(state.fluxPrompt, hfToken);
-    } catch (err: any) {
-      stopTicker();
-      setState((p) => ({
-        ...p,
-        stage: "error",
-        error: `Step 2 (FLUX): ${err.message}`,
-      }));
-      return;
-    }
+      const resultDataUrl = await processStudioImage(
+        original,
+        bgColor,
+        (msg) => {
+          setStatusMsg(msg);
+        },
+      );
 
-    stopTicker();
-    setState((p) => ({
-      ...p,
-      stage: "done",
-      generated: imageUrl,
-      statusMsg: "",
-    }));
+      setGenerated(resultDataUrl);
+      setStage("done");
+      setStatusMsg("");
+    } catch (err: any) {
+      setError(
+        err.message || "An unexpected error occurred during processing.",
+      );
+      setStage("error");
+    }
   };
 
   // ── Download ──────────────────────────────────────────────────────────────
   const download = async () => {
-    const { generated } = state;
     if (!generated) return;
     try {
       if (generated.startsWith("data:")) {
         const a = document.createElement("a");
         a.href = generated;
-        a.download = "solestudio-4k.png";
+        a.download = "solestudio-exact-4k.jpg";
         a.click();
       } else {
         const res = await fetch(generated);
@@ -183,7 +82,7 @@ export default function StudioApp() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "solestudio-4k.png";
+        a.download = "solestudio-exact-4k.jpg";
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -194,62 +93,170 @@ export default function StudioApp() {
 
   // ── Reset ─────────────────────────────────────────────────────────────────
   const reset = () => {
-    stopTicker();
-    setState(INITIAL_STATE);
+    setOriginal(null);
+    setGenerated(null);
+    setStage("idle");
+    setStatusMsg("");
+    setError(null);
   };
 
-  const { original, generated, fluxPrompt, stage, statusMsg, error } = state;
-  const isProcessing = stage === "analyzing" || stage === "generating";
+  const isProcessing = stage === "generating" || stage === "analyzing";
 
   return (
-    <div className="min-h-screen bg-[#EDEDEB] text-[#111] font-sans">
+    <div className="min-h-screen bg-[#EDEDEB] text-[#111] font-sans flex flex-col">
       <AppHeader onReset={reset} />
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
+        <div className="grid lg:grid-cols-12 gap-8 h-full">
           {/* ── Left panel ─────────────────────────────────────────────── */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 flex flex-col gap-5">
             <div className="bg-white rounded-3xl p-7 shadow-sm border border-black/5">
               <h2 className="text-xl font-bold mb-1">Upload Shoe Photo</h2>
-              <p className="text-black/40 text-sm mb-5">
-                Groq Vision reads your shoe and writes a tailored FLUX prompt
-                automatically.
+              <p className="text-black/40 text-sm mb-5 leading-relaxed">
+                We use precise AI background segmentation to protect 100% of
+                your shoe's original details, placing it perfectly on a 4K
+                studio sweep.
               </p>
 
               <UploadZone hasFile={!!original} onFile={handleFile} />
-              <PromptViewer prompt={fluxPrompt} />
-              <ActionButtons
-                stage={stage}
-                isProcessing={isProcessing}
-                hasFile={!!original}
-                onStep1={runStep1}
-                onStep2={runStep2}
-                onDownload={download}
-              />
+
+              {original && stage !== "done" && (
+                <div className="mt-6 border border-black/10 rounded-2xl p-4 bg-black/[0.02]">
+                  <p className="text-sm font-semibold mb-3">
+                    Studio Backdrop Color
+                  </p>
+                  <div className="flex items-center gap-3">
+                    {[
+                      { name: "Pro Grey", hex: "#5A5A5C" },
+                      { name: "Light Sweep", hex: "#E8E8E8" },
+                      { name: "Dark Charcoal", hex: "#222222" },
+                      { name: "Pure White", hex: "#FFFFFF" },
+                      { name: "Blush Pink", hex: "#F3E8EC" },
+                    ].map((swatch) => (
+                      <button
+                        key={swatch.name}
+                        title={swatch.name}
+                        onClick={() => setBgColor(swatch.hex)}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
+                          bgColor === swatch.hex
+                            ? "border-orange-500 scale-110 shadow-md"
+                            : "border-black/10"
+                        }`}
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                    ))}
+                    <div className="w-px h-6 bg-black/10 mx-1" />
+                    <label
+                      title="Custom Color"
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-transform hover:scale-110 overflow-hidden ${
+                        ![
+                          "#5A5A5C",
+                          "#E8E8E8",
+                          "#222222",
+                          "#FFFFFF",
+                          "#F3E8EC",
+                        ].includes(bgColor)
+                          ? "border-orange-500 scale-110 shadow-md"
+                          : "border-black/10"
+                      }`}
+                      style={{ backgroundColor: bgColor }}
+                    >
+                      <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="opacity-0 w-full h-full cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {original && stage !== "done" && (
+                <button
+                  onClick={runGeneration}
+                  disabled={isProcessing}
+                  className="w-full mt-6 bg-black text-white hover:bg-neutral-800 disabled:bg-black/20 disabled:text-white/50 transition-colors py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? (
+                    <div className="flex animate-pulse items-center gap-2">
+                      <Wand2 size={18} />
+                      Processing...
+                    </div>
+                  ) : (
+                    <>
+                      <Wand2 size={18} />
+                      Generate Studio Asset
+                    </>
+                  )}
+                </button>
+              )}
+
+              {stage === "done" && (
+                <button
+                  onClick={download}
+                  className="w-full mt-6 bg-gradient-to-r from-orange-500 to-pink-600 text-white hover:opacity-90 transition-opacity py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+                >
+                  <Download size={18} />
+                  Download 4K Asset
+                </button>
+              )}
+
               {error && (
-                <ErrorBanner
-                  message={error}
-                  onRetry={stage === "analyzed" ? runStep2 : runStep1}
-                />
+                <div className="mt-4">
+                  <ErrorBanner message={error} onRetry={runGeneration} />
+                </div>
               )}
             </div>
 
             {original && <SourceThumbnail src={original} />}
-            <PipelineInfo />
+
+            <div className="bg-white/50 border border-black/5 rounded-2xl p-5 text-sm text-black/60">
+              <div className="flex items-center gap-2 mb-2 font-medium text-black">
+                <CopyCheck size={16} className="text-green-600" />
+                Exact-Detail Mode Active
+              </div>
+              Your original image pixels are perfectly preserved. We only
+              intelligently strip the background and inject physics-based drop
+              shadows.
+            </div>
           </div>
 
           {/* ── Right panel — Studio Canvas ────────────────────────────── */}
-          <div className="lg:col-span-8">
-            <StudioCanvas
-              stage={stage}
-              isProcessing={isProcessing}
-              statusMsg={statusMsg}
-              original={original}
-              generated={generated}
-              fluxPrompt={fluxPrompt}
-              onGenerate={runStep2}
-              onDownload={download}
-            />
+          <div className="lg:col-span-8 bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm relative min-h-[600px] flex items-center justify-center">
+            {!original && (
+              <div className="text-center text-black/30 flex flex-col items-center">
+                <Wand2 size={48} className="mb-4 opacity-50" />
+                <p className="font-medium">
+                  Upload a photo to see the studio preview
+                </p>
+              </div>
+            )}
+
+            {original && !generated && !isProcessing && (
+              <img
+                src={original}
+                className="max-w-full max-h-full object-contain opacity-50 p-8"
+                alt="Original Preview"
+              />
+            )}
+
+            {isProcessing && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-black/10 border-t-black rounded-full animate-spin mb-6" />
+                <p className="font-mono text-sm tracking-widest uppercase font-bold text-black/70 animate-pulse">
+                  {statusMsg || "Processing pixels..."}
+                </p>
+              </div>
+            )}
+
+            {generated && (
+              <img
+                src={generated}
+                className="w-full h-full object-cover transition-opacity duration-700 opacity-100"
+                alt="Generated Studio Asset"
+              />
+            )}
           </div>
         </div>
       </main>
