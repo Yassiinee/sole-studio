@@ -59,6 +59,14 @@ export default function StudioApp() {
       setGenerated(resultDataUrl);
       setStage("done");
       setStatusMsg("");
+
+      // Automatically scroll to canvas on mobile devices upon success
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
     } catch (err: any) {
       setError(
         err.message || "An unexpected error occurred during processing.",
@@ -125,7 +133,7 @@ export default function StudioApp() {
                   <p className="text-sm font-semibold mb-3">
                     Studio Backdrop Color
                   </p>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     {[
                       { name: "Pro Grey", hex: "#5A5A5C" },
                       { name: "Light Sweep", hex: "#E8E8E8" },
@@ -223,7 +231,7 @@ export default function StudioApp() {
           </div>
 
           {/* ── Right panel — Studio Canvas ────────────────────────────── */}
-          <div className="lg:col-span-8 bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm relative min-h-[600px] flex items-center justify-center">
+          <div className="lg:col-span-8 bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm relative min-h-[400px] lg:min-h-[600px] flex items-center justify-center mb-8 lg:mb-0">
             {!original && (
               <div className="text-center text-black/30 flex flex-col items-center">
                 <Wand2 size={48} className="mb-4 opacity-50" />

@@ -34,7 +34,7 @@ export default function LandingPage() {
 
       {/* Navbar */}
       <nav className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-tr from-orange-500 to-purple-600 rounded-xl flex items-center justify-center">
               <Camera size={20} className="text-white" />
@@ -43,16 +43,16 @@ export default function LandingPage() {
               SoleStudio <span className="font-light text-white/60">Pro</span>
             </span>
           </div>
-          <div>
+          <div className="flex items-center">
             <Link
               to="/auth"
-              className="text-sm font-medium hover:text-white text-white/70 transition-colors mr-6"
+              className="hidden sm:inline-block text-sm font-medium hover:text-white text-white/70 transition-colors mr-6"
             >
               Sign In
             </Link>
             <Link
               to="/auth"
-              className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              className="bg-white text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium hover:bg-neutral-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.15)] whitespace-nowrap"
             >
               Get Started
             </Link>
@@ -61,7 +61,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-24 lg:pt-48 lg:pb-32 flex flex-col items-center text-center">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16 lg:pt-48 lg:pb-32 flex flex-col items-center text-center">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -80,7 +80,7 @@ export default function LandingPage() {
 
           <motion.h1
             variants={itemVariants}
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.05] mb-8"
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.05] mb-8"
           >
             Studio Quality. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
@@ -92,7 +92,9 @@ export default function LandingPage() {
             variants={itemVariants}
             className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed"
           >
-            Upload amateur shoe photos. Our AI surgically extracts your shoe with pixel-perfect accuracy and composites it onto a flawless 4K studio sweep with realistic physics-based shadows.
+            Upload amateur shoe photos. Our AI surgically extracts your shoe
+            with pixel-perfect accuracy and composites it onto a flawless 4K
+            studio sweep with realistic physics-based shadows.
           </motion.p>
 
           <motion.div
