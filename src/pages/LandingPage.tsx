@@ -1,7 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { Camera, Wand2, Zap, ArrowRight, ShieldCheck } from "lucide-react";
+import {
+  Camera,
+  Wand2,
+  Zap,
+  ArrowRight,
+  ShieldCheck,
+  Github,
+  Mail,
+  Linkedin,
+} from "lucide-react";
 
 export default function LandingPage() {
   const containerVariants = {
@@ -155,8 +164,52 @@ export default function LandingPage() {
       </main>
 
       {/* Footer minimal */}
-      <footer className="relative z-10 border-t border-white/10 py-8 text-center text-white/30 text-sm">
-        <p>© 2026 SoleStudio Pro. A concept application.</p>
+      <footer className="relative z-10 border-t border-white/10 py-12 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <p className="text-sm text-white/30">© 2026 SoleStudio Pro</p>
+            <p className="text-xs text-white/40">
+              Crafted with precision by{" "}
+              <a
+                href="https://github.com/Yassiinee"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white font-bold hover:text-orange-500 transition-colors"
+              >
+                Yassine Zakhama
+              </a>
+            </p>
+          </div>
+          <div className="flex flex-col items-center md:items-end gap-4">
+            <div className="flex gap-5">
+              <a
+                href="https://github.com/Yassiinee"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub Profile"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all hover:scale-110"
+              >
+                <Github size={18} />
+              </a>
+              <a
+                href="mailto:zakhamayassine@gmail.com"
+                title="Send Email"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all hover:scale-110"
+              >
+                <Mail size={18} />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/yassine-zakhama"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="LinkedIn"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all hover:scale-110"
+              >
+                <Linkedin size={18} />
+              </a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
