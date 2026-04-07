@@ -1,7 +1,8 @@
 import React from "react";
-import { Camera, LogOut } from "lucide-react";
+import { Camera, LogOut, User as UserIcon } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface AppHeaderProps {
   onReset: () => void;
@@ -9,11 +10,15 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onReset }: AppHeaderProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
+
+  // Get first letter of email for avatar
+  const initial = user?.email ? user.email.charAt(0).toUpperCase() : "U";
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-black/6">
@@ -31,20 +36,58 @@ export default function AppHeader({ onReset }: AppHeaderProps) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onReset}
-            className="text-xs font-semibold text-black/35 hover:text-black border border-black/10 rounded-xl px-3 py-1.5 transition-colors"
-          >
-            Start Over
-          </button>
-          <button
-            onClick={handleLogout}
-            className="text-xs font-semibold text-red-500/60 hover:text-red-600 hover:bg-red-50 border border-red-500/10 rounded-xl px-3 py-1.5 transition-colors flex items-center gap-1"
-          >
-            <LogOut size={12} />
-            Log Out
-          </button>
+
+        <div className="flex items-center gap-6">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onReset}
+              className="text-xs font-semibold text-black/35 hover:text-black border border-black/10 rounded-xl px-3 py-1.5 transition-colors"
+            >
+              Start Over
+            </button>
+          </div>
+
+          {/* Vertical Divider */}
+          <div className="w-px h-6 bg-black/10" />
+
+          {/* Profile Section */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-bold text-black">
+                Active Session
+              </span>
+              <span className="text-[10px] font-medium text-black/40 truncate max-w-[120px]">
+                {user?.email || "Guest User"}
+              </span>
+            </div>
+
+            <div className="relative group cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(249,115,22,0.2)] border-2 border-white">
+                {initial}
+              </div>
+
+              {/* Dropdown Menu (Hover) */}
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 flex flex-col overflow-hidden">
+                <div className="px-4 py-3 border-b border-black/5 bg-black/[0.02]">
+                  <p className="text-xs font-bold text-black truncate">
+                    {user?.email}
+                  </p>
+                  <p className="text-[10px] text-green-600 font-semibold mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    Online
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-3 text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-2 text-left"
+                >
+                  <LogOut size={14} />
+                  Sign Out of Device
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>

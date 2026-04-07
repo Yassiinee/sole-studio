@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Camera, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
+import { Camera, Mail, Lock, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(useGSAP);
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +16,11 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  // GSAP Refs
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +34,20 @@ export default function AuthPage() {
       return;
     }
 
+    // Pro GSAP Loading Sequence Start
+    const tl = gsap.timeline();
+    tl.to(overlayRef.current, { y: "0%", duration: 0.8, ease: "power4.inOut" })
+      .to(
+        textContainerRef.current,
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        "-=0.3",
+      )
+      .to(
+        progressBarRef.current,
+        { width: "70%", duration: 1.5, ease: "power2.out" },
+        "-=0.4",
+      );
+
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -32,7 +55,20 @@ export default function AuthPage() {
           password,
         });
         if (error) throw error;
-        navigate("/app");
+
+        // Success Animation then Navigate
+        gsap.to(progressBarRef.current, {
+          width: "100%",
+          duration: 1.0,
+          ease: "power2.inOut",
+        });
+        gsap.to(textContainerRef.current, {
+          opacity: 0,
+          y: -20,
+          duration: 0.6,
+          delay: 1.5,
+          onComplete: () => navigate("/app"),
+        });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -40,16 +76,54 @@ export default function AuthPage() {
         });
         if (error) throw error;
         setError("Success! Please check your email to verify your account.");
+
+        // Error / Success Rollback Animation
+        gsap.to(overlayRef.current, {
+          y: "100%",
+          duration: 0.7,
+          ease: "power4.inOut",
+          delay: 1,
+          onComplete: () => setLoading(false),
+        });
       }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
-    } finally {
-      setLoading(false);
+      gsap.to(overlayRef.current, {
+        y: "100%",
+        duration: 0.7,
+        ease: "power4.inOut",
+        delay: 0.5,
+        onComplete: () => setLoading(false),
+      });
     }
   };
 
   return (
     <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative selection:bg-orange-500/30">
+      {/* GSAP Fullscreen Loading Overlay */}
+      <div
+        ref={overlayRef}
+        className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center transform translate-y-full"
+      >
+        <div
+          ref={textContainerRef}
+          className="opacity-0 translate-y-4 flex flex-col items-center"
+        >
+          <div className="w-16 h-16 bg-gradient-to-tr from-orange-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 animate-pulse shadow-[0_0_40px_rgba(249,115,22,0.4)]">
+            <Camera size={32} className="text-white" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50">
+            Authenticating
+          </h2>
+          <div className="w-48 h-1 bg-white/10 rounded-full mt-6 overflow-hidden">
+            <div
+              ref={progressBarRef}
+              className="h-full bg-white rounded-full w-0"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Background blobs */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-orange-600/10 rounded-full blur-[100px]" />
@@ -136,15 +210,9 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-white text-black hover:bg-neutral-200 transition-colors py-3.5 rounded-xl font-bold flex items-center justify-center disabled:opacity-70"
+              className="w-full mt-6 bg-white text-black hover:bg-neutral-200 transition-colors py-3.5 rounded-xl font-bold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <Loader2 size={20} className="animate-spin" />
-              ) : isLogin ? (
-                "Sign In"
-              ) : (
-                "Sign Up"
-              )}
+              {isLogin ? "Sign In" : "Sign Up"}
             </button>
           </form>
 
@@ -152,11 +220,13 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={() => {
+                if (loading) return;
                 setIsLogin(!isLogin);
                 setError(null);
                 setPassword("");
               }}
-              className="text-sm text-white/50 hover:text-white transition-colors"
+              className="text-sm text-white/50 hover:text-white transition-colors disabled:opacity-50"
+              disabled={loading}
             >
               {isLogin
                 ? "Don't have an account? Sign up"
@@ -166,8 +236,11 @@ export default function AuthPage() {
         </motion.div>
 
         <button
-          onClick={() => navigate("/")}
-          className="mt-8 text-white/40 text-sm hover:text-white transition-colors"
+          onClick={() => {
+            if (!loading) navigate("/");
+          }}
+          className="mt-8 text-white/40 text-sm hover:text-white transition-colors disabled:opacity-50"
+          disabled={loading}
         >
           &larr; Back to home
         </button>
